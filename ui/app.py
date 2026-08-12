@@ -6,19 +6,13 @@ import uuid
 import logfire
 from dotenv import load_dotenv
 
-
-# Load environment variables explicitly from the root directory
 env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
 load_dotenv(dotenv_path=env_path)
-
-
-# Initialize Logfire
 try:
     token = os.getenv("LOGFIRE_TOKEN")
     if not token:
         print("ERROR: LOGFIRE_TOKEN is empty or None!")
     logfire.configure(token=token)
-    # logfire.instrument_requests() # Disabled due to OpenTelemetry bug on Windows: MeterProvider.get_meter() got multiple values for argument 'version'
     LOGFIRE_STATUS = "Connected & Tracing"
 except Exception as e:
     print(f"Logfire Init Error in UI: {e}")
@@ -26,7 +20,6 @@ except Exception as e:
     
 
 
-# --- PAGE CONFIG ---
 st.set_page_config(
     page_title="Enterprise Agentic RAG",
     page_icon="🤖",

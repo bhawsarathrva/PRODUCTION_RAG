@@ -3,7 +3,7 @@ from langchain_groq import ChatGroq
 from nemoguardrails import RailsConfig, LLMRails
 
 from app.config import settings
-from app.guardrails.colang_rules import COLANG_CONTENT, YAML_CONTENT, RAIL_INDICATORS
+from app.guardrails.colang_rule import COLANG_CONTENT, YAML_CONTENT, RAIL_INDICATORS
 
 
 _rails: LLMRails | None = None

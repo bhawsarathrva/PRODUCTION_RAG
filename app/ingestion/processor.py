@@ -8,26 +8,21 @@ from qdrant_client import QdrantClient
 from qdrant_client.http import models
 
 from app.config import settings
-from app.services.retrieval.embedding import embed_texts, get_embedding_dim
+from app.services.retrieval.embeddings import embed_texts, get_embedding_dim
 from app.ingestion.loaders.pdf import parse_pdf
 from app.ingestion.loaders.html import parse_html
 from app.ingestion.loaders.text import parse_text
 from app.ingestion.chunking.splitter import chunk_text
 
 logfire.configure(service_name="enterprise-ingestion-service")
-
-# Local folder where parsed + chunked JSON metadata is saved (replaces GCS processed bucket)
 PROCESSED_DATA_DIR = "processed_data"
 
-# Initialize Qdrant Client
 qdrant_client = QdrantClient(
     url=settings.QDRANT_URL,
     api_key=settings.QDRANT_API_KEY,
 )
 
-
 def save_processed_locally(data: dict, source_type: str, filename: str) -> str:
-    """Save parsed chunk metadata as JSON in processed_data/<source_type>/."""
     folder = os.path.join(PROCESSED_DATA_DIR, source_type)
     os.makedirs(folder, exist_ok=True)
     dest = os.path.join(folder, f"{filename}.json")
@@ -59,12 +54,9 @@ def process_file(file_path: str, filename: str, source_type: str):
                 logfire.warning(f"No text extracted from {filename} — skipping.")
                 return
 
-            # 2. Chunk text
             chunks = chunk_text(full_text)
             if not chunks:
                 return
-
-            # 3. Save processed metadata locally
             processed_data = {
                 "filename": filename,
                 "source_type": source_type,
@@ -73,7 +65,6 @@ def process_file(file_path: str, filename: str, source_type: str):
             local_path = save_processed_locally(processed_data, source_type, filename)
             logfire.info(f"Saved processed data → {local_path}")
 
-            # 4. Embed and index in Qdrant
             with logfire.span("Vectorizing & Indexing"):
                 embeddings = embed_texts(chunks)
                 points = [
@@ -166,9 +157,6 @@ def run_universal_ingestion(base_dir: str, explicit_source_type: str = None, wip
 
 
 if __name__ == "__main__":
-    # Usage:
-    #   python -m app.ingestion.processor DATA --wipe
-    #   python -m app.ingestion.processor DATA/true_data true
     wipe_requested = "--wipe" in sys.argv
     clean_args = [a for a in sys.argv if a != "--wipe"]
 

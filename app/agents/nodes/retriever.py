@@ -9,8 +9,7 @@ def retrieve_node(state: AgentState):
     """
     query = state["current_query"]
     
-    
-    # Standard Retrieval Logic
+      
     with logfire.span("🔍 Knowledge Retrieval"):
         logfire.info(f"Searching Qdrant for: {query}")
         raw_results = search_enterprise_knowledge(query, limit=15)
